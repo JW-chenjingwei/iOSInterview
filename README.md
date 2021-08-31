@@ -16,11 +16,11 @@
 2. 对象方法、属性、成员变量、协议信息，存放在class对象中
 3. 类方法，存放在meta-class对象中
 
-### Class内存结构是怎样的
+### 4. Class内存结构是怎样的
 ![objc_class的结构](https://github.com/JW-chenjingwei/iOSInterview/blob/main/objc_class%E7%9A%84%E7%BB%93%E6%9E%84.png)
 ## KVO
 ### 1. iOS用什么方式实现对一个对象的KVO？(KVO的本质是什么？)
-1. 利用RuntimeAPI动态生成一个子类，并且让instance对象的isa指向这个全新的子类
+1. 利用RuntimeAPI动态生成一个子类，并且让instance对象的isa指向这个全新的子类 `NSKVONotifying_类名`
 2. 当修改instance对象的属性时，会调用Foundation的_NSSetXXXValueAndNotify函数
 3. willChangeValueForKey:
    父类原来的setter
@@ -41,8 +41,10 @@
 
 ##  Category
 ### 1. Category的实现原理
-1. Category编译之后的底层结构是struct category_t，里面存储着分类的对象方法、类方法、属性、协议信息
-2. 在程序运行的时候，runtime会将Category的数据，合并到类信息中（类对象、元类对象中）
+1. 通过Runtime加载某个类的所有Category数据
+2. 把所有Category的方法、属性、协议数据，合并到一个大数组中,后面参与编译的Category数据，会在数组的前面
+3. 将合并后的分类数据（方法、属性、协议），插入到类原来数据的前面
+
 
 ### 2. Category和Class Extension的区别是什么？
 1. Class Extension在编译的时候，它的数据就已经包含在类信息中
@@ -54,11 +56,30 @@ load方法在runtime加载类、分类的时候调用
 load方法可以继承，但是一般情况下不会主动去调用load方法，都是让系统自动调用
 
 ### 4. load、initialize方法的区别什么？它们在category中的调用的顺序？以及出现继承时他们之间的调用过程？
-1. load:类加载到内存时调用
-2. initialize :类第一次被使用\第一次被方法调用时会调用
+1. +load方法会在runtime加载类、分类时调用
+2.每个类、分类的+load，在程序运行过程中只调用一次
+3. 调用顺序
+   先调用类的+load
+   按照编译先后顺序调用（先编译，先调用）
+   调用子类的+load之前会先调用父类的+load
+3.2再调用分类的+load
+   按照编译先后顺序调用（先编译，先调用）
+
+4. +initialize方法会在类第一次接收到消息时调用
+调用顺序
+先调用父类的+initialize，再调用子类的+initialize
+(先初始化父类，再初始化子类，每个类只会初始化1次)
+
+5. +initialize和+load的很大区别是，+initialize是通过objc_msgSend进行调用的，所以有以下特点
+如果子类没有实现+initialize，会调用父类的+initialize（所以父类的+initialize可能会被调用多次）
+如果分类实现了+initialize，就覆盖类本身的+initialize调用
+
 
 ### 5. Category能否添加成员变量？如果可以，如何给Category添加成员变量？
 不能直接给Category添加成员变量，但是可以间接实现Category有成员变量的效果
+
+### 6. Category的底层结构
+![Category的底层结构](https://github.com/JW-chenjingwei/iOSInterview/blob/main/Category%E7%9A%84%E5%BA%95%E5%B1%82%E7%BB%93%E6%9E%84.png)
 
 ## Block
 ### 1. block的原理是怎样的？本质是什么？
