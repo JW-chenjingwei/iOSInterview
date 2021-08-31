@@ -16,7 +16,8 @@
 2. 对象方法、属性、成员变量、协议信息，存放在class对象中
 3. 类方法，存放在meta-class对象中
 
-
+### Class内存结构是怎样的
+![objc_class的结构](https://github.com/JW-chenjingwei/iOSInterview/blob/main/objc_class%E7%9A%84%E7%BB%93%E6%9E%84.png)
 ## KVO
 ### 1. iOS用什么方式实现对一个对象的KVO？(KVO的本质是什么？)
 1. 利用RuntimeAPI动态生成一个子类，并且让instance对象的isa指向这个全新的子类
